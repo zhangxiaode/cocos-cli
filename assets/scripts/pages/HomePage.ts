@@ -1,6 +1,8 @@
 import { _decorator, Component, Button, Label, Node, UITransform, Color, Sprite, Graphics, Vec3 } from 'cc';
 import { UIManager } from '../framework/UIManager';
 import { SoundManager } from '../framework/SoundManager';
+import { UserSystem } from '../system/UserSystem';
+import { RankSystem } from '../game/RankSystem';
 
 const { ccclass } = _decorator;
 
@@ -8,6 +10,7 @@ const { ccclass } = _decorator;
 export class HomePage extends Component {
     private _startGameBtn: Button | null = null;
     private _rulesBtn: Button | null = null;
+    private _userInfoPanel: Node | null = null;
 
     start() {
         this._createUI();
@@ -34,6 +37,9 @@ export class HomePage extends Component {
         backgroundGraphics.rect(-backgroundSize.width / 2, -backgroundSize.height / 2, backgroundSize.width, backgroundSize.height);
         backgroundGraphics.fill();
 
+        // 创建用户信息面板
+        this._createUserInfoPanel(pageRoot);
+
         this._startGameBtn = this._createButton(pageRoot, 'StartGameBtn', '开始游戏', new Vec3(0, 50, 0));
         this._rulesBtn = this._createButton(pageRoot, 'RulesBtn', '游戏规则', new Vec3(0, -50, 0));
 
@@ -46,6 +52,75 @@ export class HomePage extends Component {
         }
 
         console.log('[HomePage] 按钮创建成功');
+    }
+
+    /**
+     * 创建用户信息面板
+     */
+    private _createUserInfoPanel(parent: Node) {
+        const userSystem = UserSystem.getInstance();
+        const rankSystem = RankSystem.getInstance();
+
+        // 创建用户信息面板容器
+        this._userInfoPanel = new Node('UserInfoPanel');
+        this._userInfoPanel.parent = parent;
+        this._userInfoPanel.setPosition(new Vec3(0, 260, 0));
+
+        const panelTransform = this._userInfoPanel.addComponent(UITransform);
+        panelTransform.setContentSize(400, 160);
+
+        // 绘制面板背景
+        const panelGraphics = this._userInfoPanel.addComponent(Graphics);
+        panelGraphics.fillColor = new Color(70, 120, 180, 200);
+        panelGraphics.roundRect(-200, -80, 400, 160, 12);
+        panelGraphics.fill();
+
+        panelGraphics.strokeColor = new Color(40, 80, 140, 255);
+        panelGraphics.lineWidth = 2;
+        panelGraphics.roundRect(-200, -80, 400, 160, 12);
+        panelGraphics.stroke();
+
+        // 用户名标签 - 第一行，左侧
+        const usernameNode = new Node('UsernameLabel');
+        usernameNode.parent = this._userInfoPanel;
+        usernameNode.setPosition(new Vec3(-90, 30, 0));
+        const usernameTransform = usernameNode.addComponent(UITransform);
+        usernameTransform.setContentSize(180, 50);
+
+        const usernameLabel = usernameNode.addComponent(Label);
+        usernameLabel.string = userSystem.getUsername();
+        usernameLabel.fontSize = 28;
+        usernameLabel.color = new Color(255, 255, 255, 255);
+        usernameLabel.overflow = Label.Overflow.CLAMP;
+        usernameLabel.horizontalAlign = Label.HorizontalAlign.LEFT;
+
+        // 星数标签 - 第一行，右侧
+        const starsNode = new Node('StarsLabel');
+        starsNode.parent = this._userInfoPanel;
+        starsNode.setPosition(new Vec3(120, 30, 0));
+        const starsTransform = starsNode.addComponent(UITransform);
+        starsTransform.setContentSize(110, 50);
+
+        const starsLabel = starsNode.addComponent(Label);
+        starsLabel.string = `⭐ ${userSystem.getStars()}`;
+        starsLabel.fontSize = 28;
+        starsLabel.color = new Color(255, 255, 100, 255);
+        starsLabel.overflow = Label.Overflow.CLAMP;
+        starsLabel.horizontalAlign = Label.HorizontalAlign.RIGHT;
+
+        // 段位标签 - 第二行，左对齐
+        const rankNode = new Node('RankLabel');
+        rankNode.parent = this._userInfoPanel;
+        rankNode.setPosition(new Vec3(-30, -32, 0));
+        const rankTransform = rankNode.addComponent(UITransform);
+        rankTransform.setContentSize(300, 50);
+
+        const rankLabel = rankNode.addComponent(Label);
+        rankLabel.string = rankSystem.getCurrentRankDisplayName();
+        rankLabel.fontSize = 28;
+        rankLabel.color = new Color(255, 228, 181, 255);
+        rankLabel.overflow = Label.Overflow.CLAMP;
+        rankLabel.horizontalAlign = Label.HorizontalAlign.LEFT;
     }
 
     private _createButton(parent: Node, nodeName: string, text: string, position: Vec3): Button {
@@ -104,8 +179,47 @@ export class HomePage extends Component {
      */
     onShow(params?: any) {
         console.log('首页显示');
+        // 更新用户信息显示
+        this._updateUserInfoDisplay();
         // 播放背景音乐
         SoundManager.getInstance().playBGM('sounds/bgm_home');
+    }
+
+    /**
+     * 更新用户信息显示
+     */
+    private _updateUserInfoDisplay() {
+        if (!this._userInfoPanel) return;
+
+        const userSystem = UserSystem.getInstance();
+        const rankSystem = RankSystem.getInstance();
+
+        // 更新用户名
+        const usernameNode = this._userInfoPanel.getChildByName('UsernameLabel');
+        if (usernameNode) {
+            const usernameLabel = usernameNode.getComponent(Label);
+            if (usernameLabel) {
+                usernameLabel.string = userSystem.getUsername();
+            }
+        }
+
+        // 更新段位
+        const rankNode = this._userInfoPanel.getChildByName('RankLabel');
+        if (rankNode) {
+            const rankLabel = rankNode.getComponent(Label);
+            if (rankLabel) {
+                rankLabel.string = rankSystem.getCurrentRankDisplayName();
+            }
+        }
+
+        // 更新星数
+        const starsNode = this._userInfoPanel.getChildByName('StarsLabel');
+        if (starsNode) {
+            const starsLabel = starsNode.getComponent(Label);
+            if (starsLabel) {
+                starsLabel.string = `⭐ ${userSystem.getStars()}`;
+            }
+        }
     }
 
     /**

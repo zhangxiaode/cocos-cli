@@ -6,6 +6,7 @@ import { DataManager } from './framework/DataManager';
 import { HttpManager } from './framework/HttpManager';
 import { getCurrentPlatform, getPlatformGameInfo } from './utils/Constants';
 import { HomePage } from './pages/HomePage';
+import { UserSystem } from './system/UserSystem';
 
 const { ccclass, property } = _decorator;
 
@@ -49,6 +50,9 @@ export class GameMain extends Component {
         PopupManager.getInstance().init(this._popupRoot);
         SoundManager.getInstance().init(this.node);
         HttpManager.getInstance().init(gameInfo.apiBaseUrl);
+
+        // 初始化用户系统 - 游戏启动时创建或读取用户数据
+        UserSystem.getInstance().initialize();
 
         GameMain.ui = UIManager.getInstance();
         GameMain.popup = PopupManager.getInstance();
