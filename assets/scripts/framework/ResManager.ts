@@ -17,9 +17,16 @@ export class ResManager extends Singleton<ResManager> {
             return this._cache.get(path) as T;
         }
 
-        const asset = (await resources.load(path, type)) as unknown as T;
-        this._cache.set(path, asset);
-        return asset;
+        try {
+            const asset = (await resources.load(path, type)) as unknown as T;
+            if (asset) {
+                this._cache.set(path, asset);
+            }
+            return asset;
+        } catch (error) {
+            console.warn(`[ResManager] 资源加载失败: ${path}`, error);
+            return null as T;
+        }
     }
 
     /**

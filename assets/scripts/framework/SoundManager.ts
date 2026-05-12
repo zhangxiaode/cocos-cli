@@ -57,11 +57,21 @@ export class SoundManager extends Singleton<SoundManager> {
         if (this._currentBgmPath === path) return;
 
         this._currentBgmPath = path;
-        const clip = await ResManager.getInstance().loadAudioClip(path);
-        
-        this._bgmSource.stop();
-        this._bgmSource.clip = clip;
-        this._bgmSource.play();
+        try {
+            const clip = await ResManager.getInstance().loadAudioClip(path);
+            if (!clip || !(clip as any)._nativeAsset) {
+                console.warn(`[SoundManager] 背景音乐不存在: ${path}`);
+                this._currentBgmPath = '';
+                return;
+            }
+
+            this._bgmSource.stop();
+            this._bgmSource.clip = clip;
+            this._bgmSource.play();
+        } catch (error) {
+            console.warn(`[SoundManager] 播放背景音乐失败: ${path}`, error);
+            this._currentBgmPath = '';
+        }
     }
 
     /**
@@ -78,9 +88,17 @@ export class SoundManager extends Singleton<SoundManager> {
      */
     async playEffect(path: string) {
         if (!this._effectEnabled) return;
-        
-        const clip = await ResManager.getInstance().loadAudioClip(path);
-        this._effectSource.playOneShot(clip, this._effectVolume);
+
+        try {
+            const clip = await ResManager.getInstance().loadAudioClip(path);
+            if (!clip || !(clip as any)._nativeAsset) {
+                console.warn(`[SoundManager] 音效不存在: ${path}`);
+                return;
+            }
+            this._effectSource.playOneShot(clip, this._effectVolume);
+        } catch (error) {
+            console.warn(`[SoundManager] 播放音效失败: ${path}`, error);
+        }
     }
 
     /**

@@ -3,6 +3,13 @@ import { Singleton } from './Singleton';
 
 const { ccclass } = _decorator;
 
+// 延迟加载页面脚本，避免 UIManager 与页面脚本之间的循环依赖
+const PAGE_MODULE_MAP: Record<string, () => Promise<any>> = {
+    HomePage: async () => (await import('../pages/HomePage')).HomePage,
+    GamePage: async () => (await import('../pages/GamePage')).GamePage,
+    RulesPage: async () => (await import('../pages/RulesPage')).RulesPage,
+};
+
 @ccclass('UIManager')
 export class UIManager extends Singleton<UIManager> {
     private _root: Node = null!;
@@ -17,8 +24,17 @@ export class UIManager extends Singleton<UIManager> {
     }
 
     /**
-     * 打开新页面
-     * @param prefabPath 预制体路径（resources/prefabs/pages/xxx）
+     * 注册初始页面（首页）
+     * @param pageNode 已经创建的页面节点
+     * @param pagePath 页面路径（用于资源管理）
+     */
+    registerInitialPage(pageNode: Node, pagePath: string) {
+        this._pageStack.push({ node: pageNode, path: pagePath });
+    }
+
+    /**
+     * 打开新页面（支持预制体加载和动态创建）
+     * @param prefabPath 预制体路径（resources/prefabs/pages/xxx）或页面名称
      * @param params 传递给页面的参数
      * @param animation 是否显示切换动画
      */
@@ -29,19 +45,49 @@ export class UIManager extends Singleton<UIManager> {
             lastPage.active = false;
         }
 
-        // 加载并实例化页面
-        const prefab = (await resources.load(prefabPath, Prefab)) as unknown as Prefab;
-        const pageNode = instantiate(prefab) as Node;
+        // 提取页面名称
+        const pageName = this._extractPageName(prefabPath);
+        const loader = PAGE_MODULE_MAP[pageName];
+
+        let pageNode: Node;
+        let pageScript: any = null;
+
+        // 当前页面只有脚本实现，没有对应 prefab，直接走动态创建。
+        if (loader) {
+            pageNode = new Node(pageName);
+            const ScriptClass = await loader();
+            pageScript = pageNode.addComponent(ScriptClass);
+        } else {
+            try {
+                // 尝试从预制体加载
+                const prefab = (await resources.load(prefabPath, Prefab)) as unknown as Prefab;
+                if (!prefab) {
+                    throw new Error(`预制体不存在：${prefabPath}`);
+                }
+                pageNode = instantiate(prefab) as Node;
+
+                // 从预制体的脚本中获取 onShow 方法
+                if (prefab.data && prefab.data.name && pageNode.getComponent(prefab.data.name)) {
+                    pageScript = pageNode.getComponent(prefab.data.name);
+                }
+            } catch (error) {
+                console.warn(`预制体加载失败 ${prefabPath}`, error);
+                return;
+            }
+        }
+
         pageNode.parent = this._root;
-        pageNode.getComponent(UITransform)!.setContentSize(this._root.getComponent(UITransform)!.contentSize);
+        const rootTransform = this._root.getComponent(UITransform);
+        const pageTransform = pageNode.getComponent(UITransform) ?? pageNode.addComponent(UITransform);
+        if (rootTransform) {
+            pageTransform.setContentSize(rootTransform.contentSize);
+        }
+
         const pageOpacity = pageNode.addComponent(UIOpacity);
 
-        // 传递参数
-        if (pageNode.getComponent(prefab.data.name)) {
-            const comp = pageNode.getComponent(prefab.data.name)!;
-            if (comp['onShow']) {
-                comp['onShow'](params);
-            }
+        // 传递参数给页面脚本的 onShow 方法
+        if (pageScript && pageScript.onShow) {
+            pageScript.onShow(params);
         }
 
         // 添加到页面栈
@@ -52,6 +98,15 @@ export class UIManager extends Singleton<UIManager> {
             pageOpacity.opacity = 0;
             tween(pageOpacity).to(0.3, { opacity: 255 }).start();
         }
+    }
+
+    /**
+     * 从路径中提取页面名称
+     * 例如：'prefabs/pages/GamePage' -> 'GamePage'
+     */
+    private _extractPageName(path: string): string {
+        const parts = path.split('/');
+        return parts[parts.length - 1];
     }
 
     /**
