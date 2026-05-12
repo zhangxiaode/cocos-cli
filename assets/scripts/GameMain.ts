@@ -4,6 +4,7 @@ import { PopupManager } from './framework/PopupManager';
 import { SoundManager } from './framework/SoundManager';
 import { DataManager } from './framework/DataManager';
 import { HttpManager } from './framework/HttpManager';
+import { getCurrentPlatform, getPlatformGameInfo } from './utils/Constants';
 
 const { ccclass, property } = _decorator;
 
@@ -24,6 +25,9 @@ export class GameMain extends Component {
     public static http: HttpManager;
 
     onLoad() {
+        const platform = getCurrentPlatform();
+        const gameInfo = getPlatformGameInfo(platform);
+
         // 设置游戏帧率为60fps
         game.frameRate = 60;
 
@@ -32,7 +36,7 @@ export class GameMain extends Component {
         UIManager.getInstance().init(this.uiRoot);
         PopupManager.getInstance().init(this.popupRoot);
         SoundManager.getInstance().init(this.node);
-        HttpManager.getInstance().init('https://api.yourdomain.com/v1'); // 替换为你的实际API地址
+        HttpManager.getInstance().init(gameInfo.apiBaseUrl);
 
         // 保存全局引用
         GameMain.ui = UIManager.getInstance();
@@ -40,6 +44,8 @@ export class GameMain extends Component {
         GameMain.sound = SoundManager.getInstance();
         GameMain.data = DataManager.getInstance();
         GameMain.http = HttpManager.getInstance();
+
+        console.log(`[GameMain] platform=${platform}, app=${gameInfo.appName}, version=${gameInfo.version}`);
 
         // 全局错误捕获（生产环境必备）
         this._setupGlobalErrorHandler();
