@@ -123,6 +123,21 @@ export class GameRuleSystem {
     // 添加三顶杀规则
     patterns.push(...this.getTripleKillPatterns(current));
 
+    // 添加分割杀规则
+    patterns.push(...this.getSegmentationKillPatterns(current));
+
+    // 添加双面杀规则
+    patterns.push(...this.getClampKillPatterns(current));
+
+    // 添加对顶杀规则
+    patterns.push(...this.getAgainstKillPatterns(current));
+
+    // 添加单挑杀规则
+    patterns.push(...this.getPoleKillPatterns(current));
+
+    // 添加双夹杀规则
+    patterns.push(...this.getSidesKillPatterns(current));
+
     return patterns;
   }
 
@@ -614,6 +629,442 @@ export class GameRuleSystem {
         ],
         rival: [[current.point[0] + 1, current.point[1]]],
         empty: [],
+      },
+    ];
+  }
+
+  /**
+   * 分割杀 - 4种变化
+   */
+  private getSegmentationKillPatterns(current: Position): KillPattern[] {
+    return [
+      {
+        type: 0,
+        model: {
+          current: [0, 1],
+          self: [[0, 2]],
+          rival: [[0, 0], [0, 3]],
+          empty: [],
+        },
+        self: [[current.point[0], current.point[1] + 1]],
+        rival: [
+          [current.point[0], current.point[1] - 1],
+          [current.point[0], current.point[1] + 2],
+        ],
+        empty: [],
+      },
+      {
+        type: 1,
+        model: {
+          current: [0, 2],
+          self: [[0, 1]],
+          rival: [[0, 0], [0, 3]],
+          empty: [],
+        },
+        self: [[current.point[0], current.point[1] - 1]],
+        rival: [
+          [current.point[0], current.point[1] - 2],
+          [current.point[0], current.point[1] + 1],
+        ],
+        empty: [],
+      },
+      {
+        type: 2,
+        model: {
+          current: [1, 0],
+          self: [[2, 0]],
+          rival: [[0, 0], [3, 0]],
+          empty: [],
+        },
+        self: [[current.point[0] + 1, current.point[1]]],
+        rival: [
+          [current.point[0] - 1, current.point[1]],
+          [current.point[0] + 2, current.point[1]],
+        ],
+        empty: [],
+      },
+      {
+        type: 3,
+        model: {
+          current: [2, 0],
+          self: [[1, 0]],
+          rival: [[0, 0], [3, 0]],
+          empty: [],
+        },
+        self: [[current.point[0] - 1, current.point[1]]],
+        rival: [
+          [current.point[0] - 2, current.point[1]],
+          [current.point[0] + 1, current.point[1]],
+        ],
+        empty: [],
+      },
+    ];
+  }
+
+  /**
+   * 双面杀 - 4种变化
+   */
+  private getClampKillPatterns(current: Position): KillPattern[] {
+    return [
+      {
+        type: 0,
+        model: {
+          current: [0, 0],
+          self: [[0, 3]],
+          rival: [[0, 1], [0, 2]],
+          empty: [],
+        },
+        self: [[current.point[0], current.point[1] + 3]],
+        rival: [
+          [current.point[0], current.point[1] + 1],
+          [current.point[0], current.point[1] + 2],
+        ],
+        empty: [],
+      },
+      {
+        type: 1,
+        model: {
+          current: [0, 3],
+          self: [[0, 0]],
+          rival: [[0, 2], [0, 1]],
+          empty: [],
+        },
+        self: [[current.point[0], current.point[1] - 3]],
+        rival: [
+          [current.point[0], current.point[1] - 1],
+          [current.point[0], current.point[1] - 2],
+        ],
+        empty: [],
+      },
+      {
+        type: 2,
+        model: {
+          current: [0, 0],
+          self: [[3, 0]],
+          rival: [[1, 0], [2, 0]],
+          empty: [],
+        },
+        self: [[current.point[0] + 3, current.point[1]]],
+        rival: [
+          [current.point[0] + 1, current.point[1]],
+          [current.point[0] + 2, current.point[1]],
+        ],
+        empty: [],
+      },
+      {
+        type: 3,
+        model: {
+          current: [3, 0],
+          self: [[0, 0]],
+          rival: [[2, 0], [1, 0]],
+          empty: [],
+        },
+        self: [[current.point[0] - 3, current.point[1]]],
+        rival: [
+          [current.point[0] - 1, current.point[1]],
+          [current.point[0] - 2, current.point[1]],
+        ],
+        empty: [],
+      },
+    ];
+  }
+
+  /**
+   * 对顶杀 - 8种变化
+   */
+  private getAgainstKillPatterns(current: Position): KillPattern[] {
+    return [
+      {
+        type: 0,
+        model: {
+          current: [0, 0],
+          self: [[0, 1]],
+          rival: [[0, 2], [0, 3]],
+          empty: [],
+        },
+        self: [[current.point[0], current.point[1] + 1]],
+        rival: [
+          [current.point[0], current.point[1] + 2],
+          [current.point[0], current.point[1] + 3],
+        ],
+        empty: [],
+      },
+      {
+        type: 1,
+        model: {
+          current: [0, 1],
+          self: [[0, 0]],
+          rival: [[0, 2], [0, 3]],
+          empty: [],
+        },
+        self: [[current.point[0], current.point[1] - 1]],
+        rival: [
+          [current.point[0], current.point[1] + 1],
+          [current.point[0], current.point[1] + 2],
+        ],
+        empty: [],
+      },
+      {
+        type: 2,
+        model: {
+          current: [0, 2],
+          self: [[0, 3]],
+          rival: [[0, 1], [0, 0]],
+          empty: [],
+        },
+        self: [[current.point[0], current.point[1] + 1]],
+        rival: [
+          [current.point[0], current.point[1] - 1],
+          [current.point[0], current.point[1] - 2],
+        ],
+        empty: [],
+      },
+      {
+        type: 3,
+        model: {
+          current: [0, 3],
+          self: [[0, 2]],
+          rival: [[0, 1], [0, 0]],
+          empty: [],
+        },
+        self: [[current.point[0], current.point[1] - 1]],
+        rival: [
+          [current.point[0], current.point[1] - 2],
+          [current.point[0], current.point[1] - 3],
+        ],
+        empty: [],
+      },
+      {
+        type: 4,
+        model: {
+          current: [0, 0],
+          self: [[1, 0]],
+          rival: [[2, 0], [3, 0]],
+          empty: [],
+        },
+        self: [[current.point[0] + 1, current.point[1]]],
+        rival: [
+          [current.point[0] + 2, current.point[1]],
+          [current.point[0] + 3, current.point[1]],
+        ],
+        empty: [],
+      },
+      {
+        type: 5,
+        model: {
+          current: [1, 0],
+          self: [[0, 0]],
+          rival: [[2, 0], [3, 0]],
+          empty: [],
+        },
+        self: [[current.point[0] - 1, current.point[1]]],
+        rival: [
+          [current.point[0] + 1, current.point[1]],
+          [current.point[0] + 2, current.point[1]],
+        ],
+        empty: [],
+      },
+      {
+        type: 6,
+        model: {
+          current: [2, 0],
+          self: [[3, 0]],
+          rival: [[1, 0], [0, 0]],
+          empty: [],
+        },
+        self: [[current.point[0] + 1, current.point[1]]],
+        rival: [
+          [current.point[0] - 1, current.point[1]],
+          [current.point[0] - 2, current.point[1]],
+        ],
+        empty: [],
+      },
+      {
+        type: 7,
+        model: {
+          current: [3, 0],
+          self: [[2, 0]],
+          rival: [[1, 0], [0, 0]],
+          empty: [],
+        },
+        self: [[current.point[0] - 1, current.point[1]]],
+        rival: [
+          [current.point[0] - 2, current.point[1]],
+          [current.point[0] - 3, current.point[1]],
+        ],
+        empty: [],
+      },
+    ];
+  }
+
+  /**
+   * 单挑杀 - 4种变化
+   */
+  private getPoleKillPatterns(current: Position): KillPattern[] {
+    return [
+      {
+        type: 0,
+        model: {
+          current: [0, 1],
+          self: [],
+          rival: [[0, 0], [0, 2]],
+          empty: [[0, 3]],
+        },
+        self: [],
+        rival: [
+          [current.point[0], current.point[1] - 1],
+          [current.point[0], current.point[1] + 1],
+        ],
+        empty: [[current.point[0], current.point[1] + 2]],
+      },
+      {
+        type: 1,
+        model: {
+          current: [0, 2],
+          self: [],
+          rival: [[0, 1], [0, 3]],
+          empty: [[0, 0]],
+        },
+        self: [],
+        rival: [
+          [current.point[0], current.point[1] - 1],
+          [current.point[0], current.point[1] + 1],
+        ],
+        empty: [[current.point[0], current.point[1] - 2]],
+      },
+      {
+        type: 2,
+        model: {
+          current: [1, 0],
+          self: [],
+          rival: [[0, 0], [2, 0]],
+          empty: [[3, 0]],
+        },
+        self: [],
+        rival: [
+          [current.point[0] - 1, current.point[1]],
+          [current.point[0] + 1, current.point[1]],
+        ],
+        empty: [[current.point[0] + 2, current.point[1]]],
+      },
+      {
+        type: 3,
+        model: {
+          current: [2, 0],
+          self: [],
+          rival: [[1, 0], [3, 0]],
+          empty: [[0, 0]],
+        },
+        self: [],
+        rival: [
+          [current.point[0] - 1, current.point[1]],
+          [current.point[0] + 1, current.point[1]],
+        ],
+        empty: [[current.point[0] - 2, current.point[1]]],
+      },
+    ];
+  }
+
+  /**
+   * 双夹杀 - 8种变化
+   */
+  private getSidesKillPatterns(current: Position): KillPattern[] {
+    return [
+      {
+        type: 0,
+        model: {
+          current: [0, 0],
+          self: [[0, 2]],
+          rival: [[0, 1]],
+          empty: [[0, 3]],
+        },
+        self: [[current.point[0], current.point[1] + 2]],
+        rival: [[current.point[0], current.point[1] + 1]],
+        empty: [[current.point[0], current.point[1] + 3]],
+      },
+      {
+        type: 1,
+        model: {
+          current: [0, 2],
+          self: [[0, 0]],
+          rival: [[0, 1]],
+          empty: [[0, 3]],
+        },
+        self: [[current.point[0], current.point[1] - 2]],
+        rival: [[current.point[0], current.point[1] - 1]],
+        empty: [[current.point[0], current.point[1] + 1]],
+      },
+      {
+        type: 2,
+        model: {
+          current: [0, 1],
+          self: [[0, 3]],
+          rival: [[0, 2]],
+          empty: [[0, 0]],
+        },
+        self: [[current.point[0], current.point[1] + 2]],
+        rival: [[current.point[0], current.point[1] + 1]],
+        empty: [[current.point[0], current.point[1] - 1]],
+      },
+      {
+        type: 3,
+        model: {
+          current: [0, 3],
+          self: [[0, 1]],
+          rival: [[0, 2]],
+          empty: [[0, 0]],
+        },
+        self: [[current.point[0], current.point[1] - 2]],
+        rival: [[current.point[0], current.point[1] - 1]],
+        empty: [[current.point[0], current.point[1] - 3]],
+      },
+      {
+        type: 4,
+        model: {
+          current: [0, 0],
+          self: [[2, 0]],
+          rival: [[1, 0]],
+          empty: [[3, 0]],
+        },
+        self: [[current.point[0] + 2, current.point[1]]],
+        rival: [[current.point[0] + 1, current.point[1]]],
+        empty: [[current.point[0] + 3, current.point[1]]],
+      },
+      {
+        type: 5,
+        model: {
+          current: [2, 0],
+          self: [[0, 0]],
+          rival: [[1, 0]],
+          empty: [[3, 0]],
+        },
+        self: [[current.point[0] - 2, current.point[1]]],
+        rival: [[current.point[0] - 1, current.point[1]]],
+        empty: [[current.point[0] + 1, current.point[1]]],
+      },
+      {
+        type: 6,
+        model: {
+          current: [1, 0],
+          self: [[3, 0]],
+          rival: [[2, 0]],
+          empty: [[0, 0]],
+        },
+        self: [[current.point[0] + 2, current.point[1]]],
+        rival: [[current.point[0] + 1, current.point[1]]],
+        empty: [[current.point[0] - 1, current.point[1]]],
+      },
+      {
+        type: 7,
+        model: {
+          current: [3, 0],
+          self: [[1, 0]],
+          rival: [[2, 0]],
+          empty: [[0, 0]],
+        },
+        self: [[current.point[0] - 2, current.point[1]]],
+        rival: [[current.point[0] - 1, current.point[1]]],
+        empty: [[current.point[0] - 3, current.point[1]]],
       },
     ];
   }

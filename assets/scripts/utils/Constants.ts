@@ -21,7 +21,7 @@ export interface GameInfo {
 export const GAME_INFO_CONFIG: Record<'wechat' | 'douyin', GameInfo> = {
 	wechat: {
 		appName: '小游戏模板-微信',
-		appId: 'wx_your_app_id',
+		appId: 'wx232db1d9a7f57fef',
 		envVersion: 'develop',
 		version: '0.1.0',
 		buildNumber: 1,
